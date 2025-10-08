@@ -93,8 +93,9 @@ Add the following to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "jira": {
+      "type": "stdio",
       "command": "node",
-      "args": ["/absolute/path/to/mcp-jira-server/build/index.js"],
+      "args": ["/Users/edrich.rocha/.nvm/versions/node/v22.6.0/bin/mcp-jira-server"],
       "env": {
         "JIRA_BASE_URL": "https://jira.domain.com",
         "JIRA_PAT": "your-personal-access-token-here"
