@@ -4,6 +4,9 @@
   "description": "MCP server for self-hosted Jira instance with Personal Access Token authentication",
   "type": "module",
   "main": "build/index.js",
+  "bin": {
+    "mcp-jira-server": "build/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -13,10 +16,21 @@
   "keywords": [
     "mcp",
     "jira",
-    "self-hosted"
+    "self-hosted",
+    "model-context-protocol",
+    "claude",
+    "ai-assistant"
   ],
-  "author": "",
+  "author": "edrich13",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edrich13/mcp-jira-server.git"
+  },
+  "homepage": "https://github.com/edrich13/mcp-jira-server#readme",
+  "bugs": {
+    "url": "https://github.com/edrich13/mcp-jira-server/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "axios": "^1.7.9"
@@ -25,5 +39,10 @@
     "@types/node": "^22.10.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
-  }
+  },
+  "files": [
+    "build/**/*",
+    "README.md",
+    "LICENSE"
+  ]
 }

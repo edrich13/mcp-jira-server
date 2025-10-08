@@ -33,8 +33,23 @@ A Model Context Protocol (MCP) server for interacting with self-hosted Jira inst
 
 ## Installation
 
-1. Navigate to the MCP server directory:
+### Option 1: Using npm (Recommended)
+
+**Direct usage with npx:**
 ```bash
+npx mcp-jira-server
+```
+
+**Or install globally:**
+```bash
+npm install -g mcp-jira-server
+```
+
+### Option 2: From Source
+
+1. Clone the repository:
+```bash
+git clone https://github.com/edrich13/mcp-jira-server.git
 cd mcp-jira-server
 ```
 
@@ -57,6 +72,23 @@ Add the following to your Claude Desktop configuration file:
 **MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
+**Option 1: Using npx (Recommended)**
+```json
+{
+  "mcpServers": {
+    "jira": {
+      "command": "npx",
+      "args": ["-y", "mcp-jira-server"],
+      "env": {
+        "JIRA_BASE_URL": "https://jira.domain.com",
+        "JIRA_PAT": "your-personal-access-token-here"
+      }
+    }
+  }
+}
+```
+
+**Option 2: Using source build**
 ```json
 {
   "mcpServers": {
@@ -72,10 +104,27 @@ Add the following to your Claude Desktop configuration file:
 }
 ```
 
-### For VS Code with Copilot
+### For VS Code with MCP
 
-Create or update `.vscode/mcp.json` in your project:
+Create or update `.vscode/mcp.json` in your workspace:
 
+**Option 1: Using npx (Recommended)**
+```json
+{
+  "servers": {
+    "jira": {
+      "command": "npx",
+      "args": ["-y", "mcp-jira-server"],
+      "env": {
+        "JIRA_BASE_URL": "https://jira.domain.com",
+        "JIRA_PAT": "your-personal-access-token-here"
+      }
+    }
+  }
+}
+```
+
+**Option 2: Using source build**
 ```json
 {
   "servers": {
