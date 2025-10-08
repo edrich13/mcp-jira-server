@@ -13,16 +13,41 @@ import { JiraClient, CreateIssueInput, UpdateIssueInput } from './jira-client.js
 const JIRA_BASE_URL = process.env.JIRA_BASE_URL;
 const JIRA_PAT = process.env.JIRA_PAT;
 
-if (!JIRA_BASE_URL || !JIRA_PAT) {
-  console.error('Error: JIRA_BASE_URL and JIRA_PAT environment variables are required');
-  process.exit(1);
+// Function to check if environment variables are configured
+function checkEnvironmentConfig(): { isConfigured: boolean; error?: string } {
+  const JIRA_BASE_URL = process.env.JIRA_BASE_URL;
+  const JIRA_PAT = process.env.JIRA_PAT;
+  
+  if (!JIRA_BASE_URL || !JIRA_PAT) {
+    return {
+      isConfigured: false,
+      error: 'JIRA_BASE_URL and JIRA_PAT environment variables are required. Please configure them before using Jira functionality.'
+    };
+  }
+  return { isConfigured: true };
 }
 
-// Initialize Jira client
-const jiraClient = new JiraClient({
-  baseUrl: JIRA_BASE_URL,
-  personalAccessToken: JIRA_PAT,
-});
+// Initialize Jira client (will be created on demand)
+let jiraClient: JiraClient | null = null;
+
+function getJiraClient(): JiraClient {
+  const config = checkEnvironmentConfig();
+  if (!config.isConfigured) {
+    throw new Error(config.error);
+  }
+  
+  if (!jiraClient) {
+    const JIRA_BASE_URL = process.env.JIRA_BASE_URL!;
+    const JIRA_PAT = process.env.JIRA_PAT!;
+    
+    jiraClient = new JiraClient({
+      baseUrl: JIRA_BASE_URL,
+      personalAccessToken: JIRA_PAT,
+    });
+  }
+  
+  return jiraClient;
+}
 
 // Define tools
 const tools: Tool[] = [
@@ -285,7 +310,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     switch (name) {
       case 'jira_get_issue': {
-        const issue = await jiraClient.getIssue(args.issueKey as string);
+        const issue = await getJiraClient().getIssue(args.issueKey as string);
         return {
           content: [
             {
@@ -297,7 +322,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_search_issues': {
-        const issues = await jiraClient.searchIssues(
+        const issues = await getJiraClient().searchIssues(
           args.jql as string,
           args.maxResults as number
         );
@@ -322,7 +347,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           labels: args.labels as string[],
           components: args.components as string[],
         };
-        const issue = await jiraClient.createIssue(input);
+        const issue = await getJiraClient().createIssue(input);
         return {
           content: [
             {
@@ -342,7 +367,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           labels: args.labels as string[],
           status: args.status as string,
         };
-        const issue = await jiraClient.updateIssue(args.issueKey as string, input);
+        const issue = await getJiraClient().updateIssue(args.issueKey as string, input);
         return {
           content: [
             {
@@ -354,7 +379,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_add_comment': {
-        const comment = await jiraClient.addComment(
+        const comment = await getJiraClient().addComment(
           args.issueKey as string,
           args.comment as string
         );
@@ -369,7 +394,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_get_comments': {
-        const comments = await jiraClient.getComments(args.issueKey as string);
+        const comments = await getJiraClient().getComments(args.issueKey as string);
         return {
           content: [
             {
@@ -381,7 +406,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_get_projects': {
-        const projects = await jiraClient.getProjects();
+        const projects = await getJiraClient().getProjects();
         return {
           content: [
             {
@@ -393,7 +418,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_get_project': {
-        const project = await jiraClient.getProject(args.projectKey as string);
+        const project = await getJiraClient().getProject(args.projectKey as string);
         return {
           content: [
             {
@@ -405,7 +430,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_get_issue_types': {
-        const issueTypes = await jiraClient.getIssueTypes(args.projectKey as string);
+        const issueTypes = await getJiraClient().getIssueTypes(args.projectKey as string);
         return {
           content: [
             {
@@ -417,7 +442,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_assign_issue': {
-        await jiraClient.assignIssue(args.issueKey as string, args.assignee as string);
+        await getJiraClient().assignIssue(args.issueKey as string, args.assignee as string);
         return {
           content: [
             {
@@ -429,7 +454,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_delete_issue': {
-        await jiraClient.deleteIssue(args.issueKey as string);
+        await getJiraClient().deleteIssue(args.issueKey as string);
         return {
           content: [
             {
@@ -441,7 +466,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'jira_get_current_user': {
-        const user = await jiraClient.getCurrentUser();
+        const user = await getJiraClient().getCurrentUser();
         return {
           content: [
             {
@@ -472,7 +497,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Jira MCP Server running on stdio');
+  
+  const config = checkEnvironmentConfig();
+  if (config.isConfigured) {
+    console.error('Jira MCP Server running on stdio (configured)');
+  } else {
+    console.error('Jira MCP Server running on stdio (not configured - JIRA_BASE_URL and JIRA_PAT required)');
+  }
 }
 
 main().catch((error) => {
