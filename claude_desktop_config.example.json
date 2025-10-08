@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "jira": {
+      "command": "node",
+      "args": [
+        "/Users/username/mcp-jira-server/build/index.js"
+      ],
+      "env": {
+        "JIRA_BASE_URL": "https://jira.domain.com",
+        "JIRA_PAT": "your-personal-access-token-here"
+      }
+    }
+  }
+}

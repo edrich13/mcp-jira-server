@@ -1,0 +1,29 @@
+{
+  "name": "mcp-jira-server",
+  "version": "1.0.0",
+  "description": "MCP server for self-hosted Jira instance with Personal Access Token authentication",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepare": "npm run build",
+    "dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "jira",
+    "self-hosted"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
