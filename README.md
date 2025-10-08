@@ -1,6 +1,18 @@
 # MCP Jira Server for Self-Hosted Jira
 
+[![npm version](https://badge.fury.io/js/mcp-jira-server.svg)](https://www.npmjs.com/package/mcp-jira-server)
+[![npm downloads](https://img.shields.io/npm/dm/mcp-jira-server.svg)](https://www.npmjs.com/package/mcp-jira-server)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A Model Context Protocol (MCP) server for interacting with self-hosted Jira instances using Personal Access Token (PAT) authentication.
+
+## 📦 Installation
+
+```bash
+npm install mcp-jira-server
+```
+
+**Available on npm:** https://www.npmjs.com/package/mcp-jira-server
 
 ## Features
 
