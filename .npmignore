@@ -1,0 +1,56 @@
+# Source files (only include build output)
+src/
+tsconfig.json
+
+# Development files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git files
+.gitignore
+.git/
+
+# Documentation examples (keep README.md)
+claude_desktop_config.example.json
+vscode_mcp_config.example.json
+QUICKSTART.md
+PROJECT_SUMMARY.md
+CONNECTION_TEST_RESULTS.md
+
+# Development dependencies
+node_modules/
+
+# Build artifacts that shouldn't be included
+*.tgz
+*.tar.gz
+
+# Test files
+test/
+tests/
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Coverage
+coverage/

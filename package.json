@@ -1,6 +1,6 @@
 {
   "name": "mcp-jira-server",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "MCP server for self-hosted Jira instance with Personal Access Token authentication",
   "type": "module",
   "main": "build/index.js",
@@ -25,7 +25,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/edrich13/mcp-jira-server.git"
+    "url": "git+https://github.com/edrich13/mcp-jira-server.git"
   },
   "homepage": "https://github.com/edrich13/mcp-jira-server#readme",
   "bugs": {
