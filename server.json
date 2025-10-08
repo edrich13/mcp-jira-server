@@ -1,0 +1,33 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.edrich13/mcp-jira-server",
+  "description": "MCP server for self-hosted Jira instance with Personal Access Token authentication",
+  "version": "1.0.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "mcp-jira-server",
+      "version": "1.0.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Base URL of your Jira instance (e.g., https://jira.domain.com)",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": false,
+          "name": "JIRA_BASE_URL"
+        },
+        {
+          "description": "Your Jira Personal Access Token",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true,
+          "name": "JIRA_PAT"
+        }
+      ]
+    }
+  ]
+}

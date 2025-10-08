@@ -1,12 +1,13 @@
 {
   "name": "mcp-jira-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for self-hosted Jira instance with Personal Access Token authentication",
   "type": "module",
   "main": "build/index.js",
   "bin": {
     "mcp-jira-server": "build/index.js"
   },
+  "mcpName": "io.github.edrich13/mcp-jira-server",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
