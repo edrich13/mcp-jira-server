@@ -146,6 +146,7 @@ Create or update `.vscode/mcp.json` in your workspace:
 - `JIRA_BASE_URL`: The base URL of your self-hosted Jira instance (e.g., `https://jira.domain.com`)
 - `JIRA_PAT`: Your Personal Access Token
 - `JIRA_USER_AGENT` (optional): Custom User-Agent header for Jira instances behind reverse proxies (oauth2-proxy, nginx, etc.) that filter requests by User-Agent. If your API requests get redirected to SSO login despite valid PAT, your reverse proxy may require a specific User-Agent to bypass authentication for API clients.
+- `JIRA_ALLOW_ISSUE_DELETE` (optional, default: `false`): Set to `true` to allow the `jira_delete_issue` tool. Keep disabled unless absolutely necessary.
 
 ## Available Tools
 
@@ -190,7 +191,7 @@ Create a new Jira issue.
 - `assignee` (string, optional): Username to assign to
 - `labels` (array, optional): Array of labels
 - `components` (array, optional): Array of component names
-- Custom fields: Any additional parameters prefixed with `customfield_` (e.g., `customfield_10001`)
+- `customFields` (object, optional): Only keys matching `customfield_<digits>` are accepted (e.g., `customfield_10001`)
 
 **Example:**
 ```
@@ -213,7 +214,7 @@ Update an existing Jira issue.
 - `priority` (string, optional): New priority
 - `labels` (array, optional): New labels array
 - `status` (string, optional): New status (e.g., "In Progress", "Done")
-- Custom fields: Any additional parameters prefixed with `customfield_` (e.g., `customfield_10002`)
+- `customFields` (object, optional): Only keys matching `customfield_<digits>` are accepted (e.g., `customfield_10002`)
 
 **Example:**
 ```
@@ -272,6 +273,11 @@ Delete a Jira issue permanently.
 
 **Parameters:**
 - `issueKey` (string, required): Issue key to delete
+- `confirmation` (string, required): Must be exactly `"DELETE"`
+
+**Safety requirements:**
+- `JIRA_ALLOW_ISSUE_DELETE` must be set to `true`
+- `confirmation` must be passed as `"DELETE"`
 
 **⚠️ Warning:** This action is permanent and cannot be undone.
 
