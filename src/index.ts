@@ -294,6 +294,42 @@ const tools: Tool[] = [
       properties: {},
     },
   },
+  {
+    name: 'jira_get_attachments',
+    description: 'List all attachments of a Jira issue, including each attachment id, filename, mime type and size. Use the returned id with jira_download_attachment to download a file.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        issueKey: {
+          type: 'string',
+          description: 'The Jira issue key (e.g., PROJ-123)',
+        },
+      },
+      required: ['issueKey'],
+    },
+  },
+  {
+    name: 'jira_download_attachment',
+    description: 'Download a Jira attachment to a local directory and return the saved file path. Get the attachmentId from jira_get_attachments.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        attachmentId: {
+          type: 'string',
+          description: 'The attachment id (from jira_get_attachments)',
+        },
+        outputDir: {
+          type: 'string',
+          description: 'Directory where the file will be saved (defaults to the current working directory). Created if it does not exist.',
+        },
+        filename: {
+          type: 'string',
+          description: 'Optional filename to save as. Defaults to the original attachment filename.',
+        },
+      },
+      required: ['attachmentId'],
+    },
+  },
 ];
 
 // Create server instance
@@ -487,6 +523,34 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: 'text',
               text: JSON.stringify(user, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'jira_get_attachments': {
+        const attachments = await getJiraClient().getAttachments(args.issueKey as string);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(attachments, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'jira_download_attachment': {
+        const downloaded = await getJiraClient().downloadAttachment(
+          args.attachmentId as string,
+          (args.outputDir as string) || process.cwd(),
+          args.filename as string | undefined
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Successfully downloaded attachment "${downloaded.filename}" (${downloaded.size} bytes) to ${downloaded.path}\n\n${JSON.stringify(downloaded, null, 2)}`,
             },
           ],
         };

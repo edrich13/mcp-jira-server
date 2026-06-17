@@ -280,6 +280,20 @@ Get information about the currently authenticated user.
 
 **Parameters:** None
 
+### 13. `jira_get_attachments`
+List all attachments of an issue, including each attachment id, filename, mime type and size.
+
+**Parameters:**
+- `issueKey` (required): The Jira issue key (e.g., PROJ-123)
+
+### 14. `jira_download_attachment`
+Download an attachment to a local directory and return the saved file path. Get the `attachmentId` from `jira_get_attachments`.
+
+**Parameters:**
+- `attachmentId` (required): The attachment id (from `jira_get_attachments`)
+- `outputDir` (optional): Directory where the file will be saved (defaults to the current working directory). Created if it does not exist.
+- `filename` (optional): Filename to save as. Defaults to the original attachment filename.
+
 ## Development
 
 ### Build the server
