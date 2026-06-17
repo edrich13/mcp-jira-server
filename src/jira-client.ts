@@ -310,15 +310,26 @@ export class JiraClient {
       headers: { Accept: '*/*' },
     });
 
-    const targetName = filename ?? metadata.filename;
-    const targetPath = path.resolve(outputDir, targetName);
+    // Both the user-supplied filename and the server-supplied metadata.filename
+    // are untrusted: strip any path components to prevent path traversal /
+    // arbitrary file write (e.g. "../../etc/cron" or an absolute path).
+    const safeName = path.basename(filename ?? metadata.filename);
+    if (!safeName || safeName === '.' || safeName === '..') {
+      throw new Error('Invalid attachment filename');
+    }
 
-    await fs.mkdir(path.dirname(targetPath), { recursive: true });
+    const resolvedDir = path.resolve(outputDir);
+    const targetPath = path.join(resolvedDir, safeName);
+    if (targetPath !== resolvedDir && !targetPath.startsWith(resolvedDir + path.sep)) {
+      throw new Error('Invalid attachment filename');
+    }
+
+    await fs.mkdir(resolvedDir, { recursive: true });
     await fs.writeFile(targetPath, Buffer.from(response.data));
 
     return {
       id: metadata.id,
-      filename: targetName,
+      filename: safeName,
       mimeType: metadata.mimeType,
       size: metadata.size,
       path: targetPath,
