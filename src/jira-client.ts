@@ -1,4 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
 export interface JiraConfig {
   baseUrl: string;
@@ -66,6 +68,27 @@ export interface UpdateIssueInput {
   status?: string;
   // Pass-through map for Jira custom fields to update
   customFields?: Record<string, any>;
+}
+
+export interface JiraAttachment {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  created: string;
+  content: string;
+  author?: {
+    displayName: string;
+    emailAddress: string;
+  };
+}
+
+export interface DownloadedAttachment {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  path: string;
 }
 
 export interface JiraComment {
@@ -259,5 +282,57 @@ export class JiraClient {
   async getCurrentUser(): Promise<any> {
     const response = await this.client.get('/myself');
     return response.data;
+  }
+
+  async getAttachments(issueKey: string): Promise<JiraAttachment[]> {
+    const response = await this.client.get(`/issue/${issueKey}`, {
+      params: { fields: 'attachment' },
+    });
+    return response.data.fields?.attachment ?? [];
+  }
+
+  async getAttachmentMetadata(attachmentId: string): Promise<JiraAttachment> {
+    const response = await this.client.get(`/attachment/${attachmentId}`);
+    return response.data;
+  }
+
+  async downloadAttachment(
+    attachmentId: string,
+    outputDir: string,
+    filename?: string
+  ): Promise<DownloadedAttachment> {
+    const metadata = await this.getAttachmentMetadata(attachmentId);
+
+    // The content URL is absolute (e.g. https://jira/secure/attachment/...),
+    // so it overrides the axios baseURL while keeping the auth headers.
+    const response = await this.client.get(metadata.content, {
+      responseType: 'arraybuffer',
+      headers: { Accept: '*/*' },
+    });
+
+    // Both the user-supplied filename and the server-supplied metadata.filename
+    // are untrusted: strip any path components to prevent path traversal /
+    // arbitrary file write (e.g. "../../etc/cron" or an absolute path).
+    const safeName = path.basename(filename ?? metadata.filename);
+    if (!safeName || safeName === '.' || safeName === '..') {
+      throw new Error('Invalid attachment filename');
+    }
+
+    const resolvedDir = path.resolve(outputDir);
+    const targetPath = path.join(resolvedDir, safeName);
+    if (targetPath !== resolvedDir && !targetPath.startsWith(resolvedDir + path.sep)) {
+      throw new Error('Invalid attachment filename');
+    }
+
+    await fs.mkdir(resolvedDir, { recursive: true });
+    await fs.writeFile(targetPath, Buffer.from(response.data));
+
+    return {
+      id: metadata.id,
+      filename: safeName,
+      mimeType: metadata.mimeType,
+      size: metadata.size,
+      path: targetPath,
+    };
   }
 }
