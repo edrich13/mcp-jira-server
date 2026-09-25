@@ -107,13 +107,40 @@ export class JiraClient {
     return response.data;
   }
 
-  async searchIssues(jql: string, maxResults: number = 50): Promise<JiraIssue[]> {
+  async searchIssues(jql: string, maxResults: number = 50, startAt: number = 0): Promise<JiraIssue[]> {
     const response = await this.client.post('/search', {
       jql,
+      startAt,
       maxResults,
       fields: ['summary', 'status', 'assignee', 'reporter', 'priority', 'issuetype', 'created', 'updated', 'description']
     });
     return response.data.issues;
+  }
+
+  async searchAllIssues(jql: string): Promise<JiraIssue[]> {
+    const pageSize = 100;
+    const issues: JiraIssue[] = [];
+    let startAt = 0;
+    let total = 0;
+
+    do {
+      const response = await this.client.post('/search', {
+        jql,
+        startAt,
+        maxResults: pageSize,
+        fields: ['summary', 'status', 'assignee', 'reporter', 'priority', 'issuetype', 'created', 'updated', 'description']
+      });
+      const page = response.data.issues as JiraIssue[];
+      issues.push(...page);
+      total = response.data.total ?? issues.length;
+      startAt += page.length;
+
+      if (page.length === 0) {
+        break;
+      }
+    } while (startAt < total);
+
+    return issues;
   }
 
   async createIssue(input: CreateIssueInput): Promise<JiraIssue> {

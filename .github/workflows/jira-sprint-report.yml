@@ -1,0 +1,27 @@
+name: Jira Sprint Report
+
+on:
+  schedule:
+    - cron: '0 10 * * 5'
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    environment: JIRA_BASE_URL
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run sprint-report
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_PAT: ${{ secrets.JIRA_PAT }}
+          JIRA_USER_AGENT: ${{ secrets.JIRA_USER_AGENT }}
+          GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          JIRA_PROJECT_KEY: SAYDI

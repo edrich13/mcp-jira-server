@@ -11,7 +11,8 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "prepare": "npm run build",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "sprint-report": "tsx src/sprint-report.ts"
   },
   "keywords": [
     "mcp",
