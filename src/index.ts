@@ -11,40 +11,59 @@ import { JiraClient, CreateIssueInput, UpdateIssueInput } from './jira-client.js
 
 // Environment variables
 const JIRA_BASE_URL = process.env.JIRA_BASE_URL;
+const JIRA_AUTH_TYPE = process.env.JIRA_AUTH_TYPE;
+const JIRA_USERNAME = process.env.JIRA_USERNAME;
+const JIRA_PASSWORD = process.env.JIRA_PASSWORD;
 const JIRA_PAT = process.env.JIRA_PAT;
 const JIRA_USER_AGENT = process.env.JIRA_USER_AGENT;
 
-// Function to check if environment variables are configured
-function checkEnvironmentConfig(): { isConfigured: boolean; error?: string } {
-  const JIRA_BASE_URL = process.env.JIRA_BASE_URL;
-  const JIRA_PAT = process.env.JIRA_PAT;
-  
-  if (!JIRA_BASE_URL || !JIRA_PAT) {
-    return {
-      isConfigured: false,
-      error: 'JIRA_BASE_URL and JIRA_PAT environment variables are required. Please configure them before using Jira functionality.'
-    };
+type JiraEnvironmentConfig =
+  | { authType: 'basic'; username: string; password: string }
+  | { authType: 'pat'; personalAccessToken: string };
+
+function readJiraEnvironmentConfig(): { config?: JiraEnvironmentConfig; error?: string } {
+  if (!JIRA_BASE_URL) {
+    return { error: 'JIRA_BASE_URL environment variable is required.' };
   }
-  return { isConfigured: true };
+
+  const authType = JIRA_AUTH_TYPE?.toLowerCase();
+
+  if (authType && authType !== 'basic' && authType !== 'pat') {
+    return { error: 'JIRA_AUTH_TYPE must be either "basic" or "pat".' };
+  }
+
+  if (authType === 'basic' || (!authType && (JIRA_USERNAME || JIRA_PASSWORD))) {
+    if (!JIRA_USERNAME || !JIRA_PASSWORD) {
+      return { error: 'Both JIRA_USERNAME and JIRA_PASSWORD are required for Basic authentication.' };
+    }
+
+    return { config: { authType: 'basic', username: JIRA_USERNAME, password: JIRA_PASSWORD } };
+  }
+
+  if (authType === 'pat' || (!authType && JIRA_PAT)) {
+    if (!JIRA_PAT) {
+      return { error: 'JIRA_PAT is required when JIRA_AUTH_TYPE is "pat".' };
+    }
+
+    return { config: { authType: 'pat', personalAccessToken: JIRA_PAT } };
+  }
+
+  return {
+    error: 'Configure Basic authentication with JIRA_USERNAME and JIRA_PASSWORD, or PAT authentication with JIRA_PAT.',
+  };
 }
 
 // Initialize Jira client (will be created on demand)
 let jiraClient: JiraClient | null = null;
 
 function getJiraClient(): JiraClient {
-  const config = checkEnvironmentConfig();
-  if (!config.isConfigured) {
-    throw new Error(config.error);
-  }
+  const environmentConfig = readJiraEnvironmentConfig();
+  if (!environmentConfig.config) throw new Error(environmentConfig.error);
   
   if (!jiraClient) {
-    const JIRA_BASE_URL = process.env.JIRA_BASE_URL!;
-    const JIRA_PAT = process.env.JIRA_PAT!;
-    const JIRA_USER_AGENT = process.env.JIRA_USER_AGENT;
-    
     jiraClient = new JiraClient({
-      baseUrl: JIRA_BASE_URL,
-      personalAccessToken: JIRA_PAT,
+      baseUrl: JIRA_BASE_URL!,
+      ...environmentConfig.config,
       userAgent: JIRA_USER_AGENT,
     });
   }
@@ -513,11 +532,11 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   
-  const config = checkEnvironmentConfig();
-  if (config.isConfigured) {
+  const config = readJiraEnvironmentConfig();
+  if (config.config) {
     console.error('Jira MCP Server running on stdio (configured)');
   } else {
-    console.error('Jira MCP Server running on stdio (not configured - JIRA_BASE_URL and JIRA_PAT required)');
+    console.error(`Jira MCP Server running on stdio (not configured - ${config.error})`);
   }
 }
 

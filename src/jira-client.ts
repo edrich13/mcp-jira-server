@@ -1,10 +1,14 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-export interface JiraConfig {
+interface JiraConfigBase {
   baseUrl: string;
-  personalAccessToken: string;
   userAgent?: string;
 }
+
+export type JiraConfig = JiraConfigBase & (
+  | { authType: 'basic'; username: string; password: string }
+  | { authType: 'pat'; personalAccessToken: string }
+);
 
 export interface JiraIssue {
   key: string;
@@ -84,22 +88,32 @@ export class JiraClient {
   private baseUrl: string;
 
   constructor(config: JiraConfig) {
-    this.baseUrl = config.baseUrl;
+    this.baseUrl = config.baseUrl.replace(/\/+$/, '');
     
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${config.personalAccessToken}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+
+    const requestConfig: AxiosRequestConfig = {
+      baseURL: `${this.baseUrl}/rest/api/2`,
+      headers,
+    };
+
+    if (config.authType === 'basic') {
+      requestConfig.auth = {
+        username: config.username,
+        password: config.password,
+      };
+    } else {
+      headers.Authorization = `Bearer ${config.personalAccessToken}`;
+    }
     
     if (config.userAgent) {
       headers['User-Agent'] = config.userAgent;
     }
     
-    this.client = axios.create({
-      baseURL: `${config.baseUrl}/rest/api/2`,
-      headers
-    });
+    this.client = axios.create(requestConfig);
   }
 
   async getIssue(issueKey: string): Promise<JiraIssue> {
