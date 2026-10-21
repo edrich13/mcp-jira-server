@@ -1,7 +1,7 @@
 {
   "name": "mcp-jira-server",
   "version": "1.0.3",
-  "description": "MCP server for self-hosted Jira instance with Personal Access Token authentication",
+  "description": "MCP server for self-hosted Jira with Basic and Personal Access Token authentication",
   "type": "module",
   "main": "build/index.js",
   "bin": {
